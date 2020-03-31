@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<info>
+		<version>
+			<pluginVersion>1.1</pluginVersion>
+			<requiresAtLeast>6.1.0.0</requiresAtLeast>
+		</version>
+		<description>Search notify plugin</description>
+		<documentationUrl>https://github.com/WoodWing/elvis-plugin-search-notify</documentationUrl>
+	</info>
+	<panel>
+		<url>${pluginUrl}/index.html</url>
+		
+		<iconUrl>${pluginUrl}/icon.svg</iconUrl>
+
+		<panelLocations>
+			<panelLocation id="mainRightPanel" order="100"/>
+		</panelLocations>
+
+		<requiredRoles/>
+
+		<messages>
+			<entries locale="en_US">
+				<entry key="title">Search notify</entry>
+				<entry key="button.tooltip">Refresh Query Timer</entry>
+			</entries>
+		</messages>
+
+	</panel>
+</plugin>

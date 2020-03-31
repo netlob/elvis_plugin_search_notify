@@ -1,0 +1,331 @@
+<html>
+
+<head>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+		integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"
+		integrity="sha256-KzZiKy0DWYsnwMF+X1DvQngQ2/FxF7MF3Ff72XcpuPs=" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css"
+		integrity="sha256-h20CPZ0QyXlBuAw7A+KluUYx/3pK+c7lYEpqLTlxjYQ=" crossorigin="anonymous" />
+	<script language="JavaScript" src="${pluginsBaseRootUrl}/web.shared/jquery.min.js"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.class.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
+	<script src="http://code.jquery.com/jquery.min.js"></script>
+	<script language="JavaScript">
+		const elvisApi = new ElvisAPI('${serverUrl}'), publicVapidKey = 'BErbSfblbOSTn12duCuc5KT1kD-J9I1fENrERlhIIYfsUNwfTL4Mgbd2BH8FqYUhBJCl0DEbds_SFjQsbrB2Qs8', pluginServerUrl = "http://localhost:7060";
+		let elvisContext;
+
+		const init = async (data) => {
+			elvisContext = ElvisPlugin.resolveElvisContext();
+			if (!data) { $(".loading").show(), data = await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`).then(response => response.json()); }
+			$(".loading").hide();
+			if (!data) return $("#list-tab").html(`
+				<span class="ml-2"><i>No current watchers</span>
+			`);
+			$("#list-tab").empty();
+			data.searches = data.searches.sort();
+			data.searches.forEach(hit => {
+				const sick = $("#list-tab").append(`
+						<a class="list-group-item list-group-item-action" data-toggle="list" href="#" role="tab" id="watcher-${hit}">
+							${hit}
+							${data.new_hits[hit] && data.new_hits[hit].length ? `<span class="badge badge-primary badge-pill float-right mt-1">${data.new_hits[hit] ? data.new_hits[hit].length : ""}</span>` : ""}
+							<button onclick="removeHit('${hit}')" class="float-right showhover"><span>REMOVE</span></button>
+							<button onclick="clearHit('${hit}')" class="float-right showhover"><span>CLEAR</span></button>
+						</a>
+					`);
+
+				$(`#watcher-${hit}`).click(function (a) {
+					if (a.toElement.tagName == "SPAN") return
+					selectSearch((data.new_hits[hit].length ? data.new_hits[hit].join(`${" OR "}`) : hit));
+				})
+			});
+		}
+
+		const add = async _ => {
+			if (!$('input[type="text"]').val()) return alert("Please input a search query.")
+			const state = await enableNotifications()
+			if (!state) return alert("Unexpected error while registering the serviceworker in your browser.")
+			else {
+				init(await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`, {
+					method: 'PUT',
+					body: JSON.stringify({ search: $('input[type="text"]').val() }),
+					headers: {
+						'content-type': 'application/json'
+					}
+				}).then(res => res.json()))
+			}
+		}
+
+		const removeHit = async search => {
+			console.log(search);
+			init(await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`, {
+				method: 'DELETE',
+				body: JSON.stringify({ search: search }),
+				headers: {
+					'content-type': 'application/json'
+				}
+			}).then(res => res.json()))
+		}
+
+		const clearHit = async search => {
+			console.log(search);
+			init(await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`, {
+				method: 'POST',
+				body: JSON.stringify({ search: search }),
+				headers: {
+					'content-type': 'application/json'
+				}
+			}).then(res => res.json()))
+		}
+
+		const selectSearch = search => elvisContext.openSearch(search);
+
+		const enableNotifications = async _ => {
+			if ('serviceWorker' in navigator) {
+				const curr = await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`).then(response => response.json())
+
+				if (typeof curr == "object") return true
+
+				console.log('Registering service worker');
+
+				const registration = await navigator.serviceWorker.
+					register('./worker.js', { scope: '/plugins/elvis_search_notify/' });
+				console.log('Registered service worker');
+
+				console.log('Registering push');
+				const subscription = await registration.pushManager.
+					subscribe({
+						userVisibleOnly: true,
+						applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+					});
+				console.log('Registered push');
+
+				const search = $('input[type="text"]').val();
+
+				console.log('Sending push', subscription);
+				await fetch(`${pluginServerUrl}/subscribe`, {
+					method: 'POST',
+					body: JSON.stringify({ subscription: subscription, search: search, userprofile: elvisContext.app.userProfile }),
+					headers: {
+						'content-type': 'application/json'
+					}
+				});
+				console.log('Sent push');
+				return true;
+			} else return false;
+		}
+
+		const urlBase64ToUint8Array = base64String => {
+			const padding = '='.repeat((4 - base64String.length % 4) % 4);
+			const base64 = (base64String + padding)
+				.replace(/\-/g, '+')
+				.replace(/_/g, '/');
+
+			const rawData = window.atob(base64);
+			const outputArray = new Uint8Array(rawData.length);
+
+			for (let i = 0; i < rawData.length; ++i) {
+				outputArray[i] = rawData.charCodeAt(i);
+			}
+			return outputArray;
+		}
+
+		$(init(false));
+	</script>
+	<style type="text/css">
+		@import url('https://fonts.googleapis.com/css?family=Lato:300,400,700');
+
+		* {
+			box-sizing: border-box;
+			-webkit-font-smoothing: antialiased;
+			font-weight: 400;
+			font-family: Lato, sans-serif !important;
+			outline: none !important;
+		}
+
+		html,
+		body {
+			height: 100%;
+			width: 100%;
+			padding: 0;
+			margin: 0px;
+		}
+
+		h2 {
+			color: #009ee3;
+			font-size: 16px;
+			font-weight: 700;
+			border: none;
+			border-bottom: 1px solid #e5e9ea;
+			padding: 1px 5px;
+			margin-top: 0;
+			margin-bottom: 5px;
+			width: 100vw;
+		}
+
+		hr {
+			border: none;
+			border-bottom: 1px solid #e5e9ea;
+		}
+
+		a {
+			display: block;
+		}
+
+		.container {
+			padding: 5px 10px;
+		}
+
+		.showhover {
+			opacity: 0;
+			cursor: pointer;
+			font-size: 12px;
+			margin-top: 4px;
+			background: none;
+			border: none;
+			margin-right: -5px;
+			color: #009ee3;
+		}
+
+		.showhover:first-of-type {
+			color: #ff3232 !important;
+			margin-right: 5px;
+		}
+
+		.list-group-item:hover .showhover {
+			opacity: 1;
+		}
+
+		#time {
+			color: black;
+			border: none;
+			font-size: 15vw;
+			background-color: transparent;
+			width: 100px;
+			text-align: center;
+			/* height: 100px; */
+			top: 10px;
+		}
+
+		.formcontrol {
+			font-size: 10vw;
+			background: none;
+			border: none;
+			margin-top: -10px;
+		}
+
+		.formcontrol:active {
+			color: rgba(0, 0, 0, 0.5);
+		}
+
+		/* .form {
+			height: 100px;
+			background-color: yellow;
+		} */
+
+		input::-webkit-outer-spin-button,
+		input::-webkit-inner-spin-button,
+		input[type=number] {
+			-webkit-appearance: none;
+			margin: 0;
+			-moz-appearance: textfield;
+		}
+
+		.btn {
+			width: 40px;
+			height: 40px;
+			/* border: 2px #009ee3 solid; */
+		}
+
+		.red {
+			color: #ff3232;
+		}
+
+		.green {
+			color: #40bb40;
+		}
+
+		.table {
+			table-layout: fixed;
+		}
+
+		.overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			height: 100vh;
+			width: 100vw;
+			background-color: #333;
+			opacity: .4;
+			z-index: 100;
+		}
+
+		.loader {
+			z-index: 101;
+			position: absolute;
+			top: calc(50vh - 22px);
+			left: calc(50vw - 22px);
+			width: 50px;
+			height: 50px;
+			background-color: #009ee3;
+		}
+
+		.square {
+			border: 3px solid #fff;
+			width: 20px;
+			height: 20px;
+			position: absolute;
+			top: 15px;
+			left: 15px;
+			-webkit-animation: spin 1s linear infinite;
+			animation: spin 1s linear infinite;
+		}
+
+		@-webkit-keyframes spin {
+			0% {
+				-webkit-transform: rotate(0deg);
+			}
+
+			100% {
+				-webkit-transform: rotate(360deg);
+			}
+		}
+
+		@keyframes spin {
+			0% {
+				transform: rotate(0deg);
+			}
+
+			100% {
+				transform: rotate(360deg);
+			}
+		}
+
+		.list-group-item {
+			padding: .3rem 1rem;
+		}
+
+		.badge-primary {
+			background-color: #009ee3;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="loading">
+		<div class="loader">
+			<div class="square"></div>
+		</div>
+		<div class="overlay"></div>
+	</div>
+	<div class="elvisContext">
+		<div class="container">
+			<input type="text" />
+			<button onclick="add()">Add</button>
+		</div>
+		<h2>Current watchers</h2>
+		<div class="list-group list-group-flush" id="list-tab" role="tablist"></div>
+	</div>
+</body>
+
+</html>
