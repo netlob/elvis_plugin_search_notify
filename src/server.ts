@@ -149,6 +149,8 @@ class Server {
                     const res = await this.apiManager.searchGet(search);
                     let hits = [];
                     res.hits.forEach(hit => {
+                        hit.name = hit.metadata.name;
+                        delete hit.metadata;
                         if (subscription.old_hits.includes(hit.id)) return;
                         else hits.push(hit);
                     });
