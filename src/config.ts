@@ -1,9 +1,15 @@
 export class Config {
+    /* 
+    * When using this on a not localhost machine, OR when you changed the  ,make sure to update the "pluginServerUrl" in index.html at line 16.
+    * 
+    * /
+
+
+
     /**
      * Elvis server url.
      */
     static elvisUrl: string = process.env.IR_ELVIS_URL || 'http://localhost:8080';
-
 
     /**
      * HTTP Port where the app runs.
@@ -36,43 +42,4 @@ export class Config {
      * Elvis password.
      */
     static elvisPassword: string = process.env.IR_ELVIS_PASSWORD || 'changemenow';
-
-    /**
-     * Elvis webhook token. Create a webhook that listens for "asset_update_metadata" events and that returns the "assetDomain" metadata field.
-     * 
-     * More info on creating a webhook: https://helpcenter.woodwing.com/hc/en-us/articles/115001884346
-     */
-    static elvisToken: string = process.env.IR_ELVIS_TOKEN || 'bbcG04VeVJi0gR8/2y/RmQ==';
-
-    /**
-     * Full path to the Google Service account keyfile (JSON).  
-     *
-     * Can be obtained by creating a Google Cloud account: https://cloud.google.com/vision/
-     * 
-     * Steps when starting from scratch with Google Vision:
-     * - Create a new project.
-     * - Enable the Cloud Vision API (API Manager -> Library -> Vision API).
-     * - Create a service account key (API Manager -> Credentials -> Create Credentials - Service account key).
-     * - Specify the full path to the JSON keyfile in this setting.
-     */
-    //   static googleKeyFilename: string = process.env.IR_GOOGLE_KEY_FILENAME || '/Users/hans.bolten/google-vision.json';
-    static googleKeyFilename: string = process.env.IR_GOOGLE_KEY_FILENAME || '../sjoerd.json';
-
-    /**
-     * Comma separated list of languages in which the generated tags are translated. Default value is empty 
-     * which means translation of tags is disabled
-     * 
-     * Google Translate is used as translation service.
-     * Example values for Dutch, Portuguese and Russian: 'nl,pt,ru'
-     * 
-     * - Requires googleKeyFilename setting to be configured.
-     * - Enable the Translate API on your Google Cloud account
-     * - Languages to choose from: https://cloud.google.com/translate/docs/languages
-     */
-    static languages: string = process.env.IR_LANGUAGES || 'nl,de,pt,ru';
-
-    /**
-     * Language to translate from. Default value is 'en' - English
-     */
-    static sourceLanguage: string = process.env.IR_SOURCE_LANGUAGE || 'en';
 }

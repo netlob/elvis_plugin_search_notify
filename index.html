@@ -12,7 +12,8 @@
 	<script src="${pluginsBaseRootUrl}/web.shared/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
 	<script src="http://code.jquery.com/jquery.min.js"></script>
 	<script language="JavaScript">
-		const elvisApi = new ElvisAPI('${serverUrl}'), publicVapidKey = 'BErbSfblbOSTn12duCuc5KT1kD-J9I1fENrERlhIIYfsUNwfTL4Mgbd2BH8FqYUhBJCl0DEbds_SFjQsbrB2Qs8', pluginServerUrl = "http://localhost:7060";
+		const elvisApi = new ElvisAPI('${serverUrl}'), publicVapidKey = 'BErbSfblbOSTn12duCuc5KT1kD-J9I1fENrERlhIIYfsUNwfTL4Mgbd2BH8FqYUhBJCl0DEbds_SFjQsbrB2Qs8',
+			pluginServerUrl = "http://localhost:7060";
 		let elvisContext;
 
 		const init = async (data) => {
@@ -89,7 +90,7 @@
 				console.log('Registering service worker');
 
 				const registration = await navigator.serviceWorker.
-					register('./worker.js', { scope: '/plugins/elvis_search_notify/' });
+					register('./worker.js', { scope: '/plugins/elvis_plugin_search_notify/' });
 				console.log('Registered service worker');
 
 				console.log('Registering push');
