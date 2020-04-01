@@ -41,7 +41,6 @@
 					selectSearch(hit);
 				})
 			});
-			$('input[type="text"').on('keypress', (e) => { if (e.which == 13) $('button[onclick="add()"]').click() });
 		}
 
 		const add = async _ => {
@@ -161,10 +160,9 @@
 			border: none;
 			border-bottom: 1px solid #e5e9ea;
 			padding: 1px 5px;
-			margin-top: 10px;
+			margin-top: 0;
 			margin-bottom: 5px;
 			width: 100vw;
-			padding-left: 10px;
 		}
 
 		hr {
@@ -233,24 +231,6 @@
 			-webkit-appearance: none;
 			margin: 0;
 			-moz-appearance: textfield;
-		}
-
-		input[type="text"] {
-			width: calc(100vw - 60px);
-			height: 35px;
-			padding-left: 10px;
-		}
-
-		button[onclick="add()"] {
-			width: 35px;
-			height: 35px;
-			background-color: #009ee3;
-			color: white;
-			border: none;
-		}
-
-		button[onclick="add()"]:hover {
-			background-color: #017eb4;
 		}
 
 		.btn {
@@ -350,8 +330,8 @@
 	</div>
 	<div class="elvisContext">
 		<div class="container">
-			<input type="text" placeholder="Search term..." />
-			<button onclick="add()"><i class="fas fa-plus"></i></button>
+			<input type="text" />
+			<button onclick="add()">Add</button>
 		</div>
 		<h2>Current watchers</h2>
 		<div class="list-group list-group-flush" id="list-tab" role="tablist"></div>
