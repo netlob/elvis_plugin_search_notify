@@ -29,7 +29,7 @@
 				const sick = $("#list-tab").append(`
 						<a class="list-group-item list-group-item-action" data-toggle="list" href="#" role="tab" id="watcher-${hit}">
 							${hit}
-							${data.new_hits[hit] && data.new_hits[hit].length ? `<span class="badge badge-primary badge-pill float-right mt-1">${data.new_hits[hit] ? data.new_hits[hit].length : ""}</span>` : ""}
+							${data.new_hits[hit] && data.new_hits[hit].length ? `<span class="badge badge-primary badge-pill float-right mt-1" onclick="selectSearch('${(data.new_hits[hit].length ? data.new_hits[hit].join(" OR ") : hit)}')">${data.new_hits[hit] ? data.new_hits[hit].length : ""}</span>` : ""}
 							<button onclick="removeHit('${hit}')" class="float-right showhover"><span>REMOVE</span></button>
 							<button onclick="clearHit('${hit}')" class="float-right showhover"><span>CLEAR</span></button>
 						</a>
@@ -37,7 +37,8 @@
 
 				$(`#watcher-${hit}`).click(function (a) {
 					if (a.toElement.tagName == "SPAN") return
-					selectSearch((data.new_hits[hit].length ? data.new_hits[hit].join(`${" OR "}`) : hit));
+					// selectSearch((data.new_hits[hit].length ? data.new_hits[hit].join(`${" OR "}`) : hit));
+					selectSearch(hit);
 				})
 			});
 		}
@@ -308,6 +309,14 @@
 
 		.badge-primary {
 			background-color: #009ee3;
+		}
+
+		.badge-primary:hover {
+			background-color: #017eb4;
+		}
+
+		.badge-primary:active {
+			background-color: #005275;
 		}
 	</style>
 </head>
