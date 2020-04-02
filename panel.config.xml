@@ -21,8 +21,8 @@
 
 		<messages>
 			<entries locale="en_US">
-				<entry key="title">Search notify</entry>
-				<entry key="button.tooltip">Refresh Query Timer</entry>
+				<entry key="title">Search notifications</entry>
+				<entry key="button.tooltip">Search notifications</entry>
 			</entries>
 		</messages>
 
