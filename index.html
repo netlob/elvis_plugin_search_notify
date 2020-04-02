@@ -41,7 +41,7 @@
 					selectSearch(hit);
 				})
 			});
-			$('#search').on('keypress', (e) => { if (e.which == 13) $('button[onclick="add()"]').click() });
+			$('#search').on('keypress', (e) => { if (e.which == 13) $('#add').click() });
 		}
 
 		const add = async _ => {
@@ -241,7 +241,7 @@
 			padding-left: 10px;
 		}
 
-		button[onclick="add()"] {
+		#add {
 			width: 35px;
 			height: 35px;
 			background-color: #009ee3;
@@ -249,7 +249,7 @@
 			border: none;
 		}
 
-		button[onclick="add()"]:hover {
+		#add:hover {
 			background-color: #017eb4;
 		}
 
@@ -351,7 +351,7 @@
 	<div class="elvisContext">
 		<div class="container">
 			<input type="text" placeholder="Search term..." id="search" />
-			<button onclick="add()"><i class="fas fa-plus"></i></button>
+			<button onclick="add()" id="add"><i class="fas fa-plus"></i></button>
 		</div>
 		<h2>Current watchers</h2>
 		<div class="list-group list-group-flush" id="list-tab" role="tablist"></div>

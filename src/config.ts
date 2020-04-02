@@ -17,6 +17,11 @@ export class Config {
     static httpPort: string = process.env.IR_HTTP_PORT || '7060';
 
 
+    /**
+     * Web push keys
+     * If you dont know what these are, leave them like this.
+     * If you do know what these are and how to generate them, make sure to update the public key accordingly in the index.html file!
+     */
     static publicVapidKey = process.env.PUBLIC_VAPID_KEY || 'BErbSfblbOSTn12duCuc5KT1kD-J9I1fENrERlhIIYfsUNwfTL4Mgbd2BH8FqYUhBJCl0DEbds_SFjQsbrB2Qs8';
     static privateVapidKey = process.env.PRIVATE_VAPID_KEY || 'vwKrOMmmzcy2J35DJ3AxF5VK7p7HOwIvqE8FpoOWqVA';
 

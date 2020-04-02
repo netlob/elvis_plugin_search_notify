@@ -54,7 +54,7 @@ class Server {
 
             current.push(sub);
             fs.writeFileSync("subscriptions.json", JSON.stringify(current));
-            this.checkQueries(req.body.userprofile.username);
+            this.checkQueries(req.body.userprofile.username, false);
         });
 
         this.app.get('/list/:username', async (req, res) => {
@@ -87,7 +87,7 @@ class Server {
             res.status(201).json(current[index]);
 
             fs.writeFileSync("subscriptions.json", JSON.stringify(current));
-            this.checkQueries(req.params.username);
+            this.checkQueries(req.params.username, false);
         })
 
         this.app.delete('/list/:username', async (req, res) => {
@@ -101,7 +101,7 @@ class Server {
             res.status(201).json(current[index]);
 
             fs.writeFileSync("subscriptions.json", JSON.stringify(current));
-            this.checkQueries(req.params.username);
+            this.checkQueries(req.params.username, false);
         })
 
         this.app.post('/list/:username', async (req, res) => {
@@ -115,11 +115,11 @@ class Server {
             res.status(201).json(current[index]);
 
             fs.writeFileSync("subscriptions.json", JSON.stringify(current));
-            this.checkQueries(req.params.username);
+            this.checkQueries(req.params.username, false);
         })
 
 
-        this.checkQueries("all-usernames");
+        this.checkQueries("all-usernames", true);
     }
 
     private logStartupMessage(serverMsg: string): void {
@@ -138,7 +138,7 @@ class Server {
     }
 
 
-    private async checkQueries(username) {
+    private async checkQueries(username, push) {
         const subscriptions = JSON.parse(fs.readFileSync("subscriptions.json", "utf8"));
         for (let index in subscriptions) {
             const subscription = subscriptions[index];
@@ -157,7 +157,7 @@ class Server {
                     subscriptions[index].old_hits = subscriptions[index].old_hits.concat(hits.map(hit => hit.id));
                     if (hits.length) {
                         subscriptions[index].new_hits[search] = subscriptions[index].new_hits[search].concat(hits.map(hit => hit.id));
-                        webpush.sendNotification(subscription.subscription, JSON.stringify({ hits: hits, search: search })).catch(error => {
+                        if (push) webpush.sendNotification(subscription.subscription, JSON.stringify({ hits: hits, search: search })).catch(error => {
                             console.error(error.stack);
                         });
                     }
