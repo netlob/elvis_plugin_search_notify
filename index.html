@@ -10,6 +10,7 @@
 	<script language="JavaScript" src="${pluginsBaseRootUrl}/web.shared/jquery.min.js"></script>
 	<script src="${pluginsBaseRootUrl}/web.shared/jquery.class.js" type="text/javascript"></script>
 	<script src="${pluginsBaseRootUrl}/web.shared/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
+	<script src="https://code.jquery.com/jquery.min.js"></script>
 	<script language="JavaScript">
 		const elvisApi = new ElvisAPI('${serverUrl}'), publicVapidKey = 'BErbSfblbOSTn12duCuc5KT1kD-J9I1fENrERlhIIYfsUNwfTL4Mgbd2BH8FqYUhBJCl0DEbds_SFjQsbrB2Qs8',
 			pluginServerUrl = "http://localhost:7060";
@@ -40,7 +41,7 @@
 					selectSearch(hit);
 				})
 			});
-			$('input[type="text"').on('keypress', (e) => { if (e.which == 13) $('button[onclick="add()"]').click() });
+			$('#search').on('keypress', (e) => { if (e.which == 13) $('button[onclick="add()"]').click() });
 		}
 
 		const add = async _ => {
@@ -349,7 +350,7 @@
 	</div>
 	<div class="elvisContext">
 		<div class="container">
-			<input type="text" placeholder="Search term..." />
+			<input type="text" placeholder="Search term..." id="search" />
 			<button onclick="add()"><i class="fas fa-plus"></i></button>
 		</div>
 		<h2>Current watchers</h2>
