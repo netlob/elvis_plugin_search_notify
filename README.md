@@ -22,3 +22,6 @@ The server can either be installed on the Elvis Server or on a separate machine.
 In order to use the notifications, make sure you are using Evlis on Chrome. Open the search notify panel, and fill in a search term which you would like to be notified about. Click on the + button (maybe twice is nothing happens). A dialog on the topleft of your screen should pop-up asking if you allow this site to push notifications. Click "allow". From now, everything should work.
 
 The list of search terms is linked to your username, and currently only 1 logged-in browser is support at a time per user.
+
+## Using external server (not localhost)
+When using an external server, or if you change the portnumber in config.ts, make sure to update the url accordingly in index.html on line 15(?). Change variable "pluginServerUrl", which by default has a value of http://localhost:7060, to whatever you like. Make sure to include https:// or http:// and the port number.
