@@ -168,7 +168,7 @@ class Server {
     }
 
     public startInterval(interval) {
-        setInterval(() => this.checkQueries("all-usernames"), interval * 1000);
+        setInterval(() => this.checkQueries("all-usernames", true), interval * 1000);
     }
 }
 
