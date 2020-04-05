@@ -17,7 +17,7 @@
 		let elvisContext, csrfToken;
 
 		const init = async (data) => {
-			elvisApi.csrf(data => {
+			elvisApi.csrf(async data => {
 				csrfToken = data.csrfToken
 				elvisContext = ElvisPlugin.resolveElvisContext();
 				if (!data) { $(".loading").show(), data = await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`, { headers: { 'X-CSRF-TOKEN': csrfToken } }).then(response => response.json()); }
