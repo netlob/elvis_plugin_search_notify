@@ -149,6 +149,7 @@ class Server {
                 for (let i in subscription.searches) {
                     const search = subscription.searches[i];
                     if (!subscriptions[index].new_hits[search]) subscriptions[index].new_hits[search] = [];
+                    console.log(`query ${search}`)
                     const res = await this.apiManager.searchGet(search);
                     console.log(res)
                     let hits = [];
