@@ -14,7 +14,7 @@ export class Config {
     /**
      * HTTP Port where the app runs.
      */
-    static httpPort: string = process.env.IR_HTTP_PORT || '433';
+    static httpPort: string = process.env.IR_HTTP_PORT || '7060';
 
 
     /**
