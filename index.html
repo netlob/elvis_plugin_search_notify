@@ -14,11 +14,12 @@
 	<script language="JavaScript">
 		const elvisApi = new ElvisAPI('${serverUrl}');
 		let pluginServerUrl = "${serverUrl}/plugins/elvis_plugin_search_notify_api";
-		let elvisContext;
+		let elvisContext, csrfToken, ;
 
 		const init = async (data) => {
+			elvisApi.csrf(data => csrfToken = data.csrfToken);
 			elvisContext = ElvisPlugin.resolveElvisContext();
-			if (!data) { $(".loading").show(), data = await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`).then(response => response.json()); }
+			if (!data) { $(".loading").show(), data = await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`, { headers: { 'X-CSRF-TOKEN': csrfToken } }).then(response => response.json()); }
 			$(".loading").hide();
 			if (!data) return $("#list-tab").html(`
 				<span class="ml-2"><i>No current watchers</span>
@@ -50,19 +51,21 @@
 			// const state = await enableNotifications()
 			// if (!state) return alert("Unexpected error while registering the serviceworker in your browser.")
 			else {
-				const curr = await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`).then(response => response.json())
+				const curr = await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`, { headers: { 'X-CSRF-TOKEN': csrfToken } }).then(response => response.json())
 				if (typeof curr == "object") init(await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`, {
 					method: 'PUT',
 					body: JSON.stringify({ search: search }),
 					headers: {
-						'content-type': 'application/json'
+						'content-type': 'application/json',
+						'X-CSRF-TOKEN': csrfToken
 					}
 				}).then(res => res.json()))
 				else init(await fetch(`${pluginServerUrl}/subscribe`, {
 					method: 'POST',
 					body: JSON.stringify({ search: search, userprofile: elvisContext.app.userProfile }),
 					headers: {
-						'content-type': 'application/json'
+						'content-type': 'application/json',
+						'X-CSRF-TOKEN': csrfToken
 					}
 				}).then(res => res.json()));
 			}
@@ -74,7 +77,8 @@
 				method: 'DELETE',
 				body: JSON.stringify({ search: search }),
 				headers: {
-					'content-type': 'application/json'
+					'content-type': 'application/json',
+					'X-CSRF-TOKEN': csrfToken
 				}
 			}).then(res => res.json()))
 		}
@@ -85,7 +89,8 @@
 				method: 'POST',
 				body: JSON.stringify({ search: search }),
 				headers: {
-					'content-type': 'application/json'
+					'content-type': 'application/json',
+					'X-CSRF-TOKEN': csrfToken
 				}
 			}).then(res => res.json()))
 		}
