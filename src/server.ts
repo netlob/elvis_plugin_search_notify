@@ -158,6 +158,7 @@ class Server {
                         else hits.push(hit);
                     });
                     subscriptions[index].old_hits = subscriptions[index].old_hits.concat(hits.map(hit => hit.id));
+                    console.log(`Found ${hits.length} new results`)
                     if (hits.length) {
                         subscriptions[index].new_hits[search] = subscriptions[index].new_hits[search].concat(hits.map(hit => hit.id));
                         // if (push) webpush.sendNotification(subscription.subscription, JSON.stringify({ hits: hits, search: search })).catch(error => {
