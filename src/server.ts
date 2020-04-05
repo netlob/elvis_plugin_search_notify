@@ -13,15 +13,15 @@ import { ApiManager } from './elvis-api/api-manager';
 // webpush.setVapidDetails('mailto:sjoerdabolten@gamil.com', Config.publicVapidKey, Config.privateVapidKey);
 
 // Certificate
-const privateKey = fs.readFileSync('/etc/letsencrypt/live/demo.netlob.dev/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/demo.netlob.dev/cert.pem', 'utf8');
-const ca = fs.readFileSync('/etc/letsencrypt/live/demo.netlob.dev/chain.pem', 'utf8');
+// const privateKey = fs.readFileSync('/etc/letsencrypt/live/demo.netlob.dev/privkey.pem', 'utf8');
+// const certificate = fs.readFileSync('/etc/letsencrypt/live/demo.netlob.dev/cert.pem', 'utf8');
+// const ca = fs.readFileSync('/etc/letsencrypt/live/demo.netlob.dev/chain.pem', 'utf8');
 
-const credentials = {
-    key: privateKey,
-    cert: certificate,
-    ca: ca
-};
+// const credentials = {
+//     key: privateKey,
+//     cert: certificate,
+//     ca: ca
+// };
 
 
 class Server {
@@ -46,9 +46,9 @@ class Server {
         this.app.use(this.allowCrossDomain);
         this.app.use(express.static(__dirname, { dotfiles: 'allow' }));
 
-        https.createServer(credentials, this.httpApp).listen(Config.httpPort, () => {
-            this.logStartupMessage('HTTPS Server started at port: ' + Config.httpPort);
-        });
+        // https.createServer(credentials, this.httpApp).listen(Config.httpPort, () => {
+        //     this.logStartupMessage('HTTPS Server started at port: ' + Config.httpPort);
+        // });
 
         http.createServer(this.httpApp).listen(80, () => {
             this.logStartupMessage('HTTP Server started at port: ' + 80);
