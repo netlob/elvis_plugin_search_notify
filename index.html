@@ -14,35 +14,37 @@
 	<script language="JavaScript">
 		const elvisApi = new ElvisAPI('${serverUrl}');
 		let pluginServerUrl = "${serverUrl}/plugins/elvis_plugin_search_notify_api";
-		let elvisContext, csrfToken, ;
+		let elvisContext, csrfToken;
 
 		const init = async (data) => {
-			elvisApi.csrf(data => csrfToken = data.csrfToken);
-			elvisContext = ElvisPlugin.resolveElvisContext();
-			if (!data) { $(".loading").show(), data = await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`, { headers: { 'X-CSRF-TOKEN': csrfToken } }).then(response => response.json()); }
-			$(".loading").hide();
-			if (!data) return $("#list-tab").html(`
-				<span class="ml-2"><i>No current watchers</span>
-			`);
-			$("#list-tab").empty();
-			data.searches = data.searches.sort();
-			data.searches.forEach(hit => {
-				const sick = $("#list-tab").append(`
-						<a class="list-group-item list-group-item-action" data-toggle="list" href="#" role="tab" id="watcher-${hit}">
-							${hit}
-							${data.new_hits[hit] && data.new_hits[hit].length ? `<span class="badge badge-primary badge-pill float-right mt-1" onclick="selectSearch('${(data.new_hits[hit].length ? data.new_hits[hit].join(" OR ") : hit)}')">${data.new_hits[hit] ? data.new_hits[hit].length : ""}</span>` : ""}
-							<button onclick="removeHit('${hit}')" class="float-right showhover"><span>REMOVE</span></button>
-							<button onclick="clearHit('${hit}')" class="float-right showhover"><span>CLEAR</span></button>
-						</a>
-					`);
+			elvisApi.csrf(data => {
+				csrfToken = data.csrfToken
+				elvisContext = ElvisPlugin.resolveElvisContext();
+				if (!data) { $(".loading").show(), data = await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`, { headers: { 'X-CSRF-TOKEN': csrfToken } }).then(response => response.json()); }
+				$(".loading").hide();
+				if (!data) return $("#list-tab").html(`
+					<span class="ml-2"><i>No current watchers</span>
+				`);
+				$("#list-tab").empty();
+				data.searches = data.searches.sort();
+				data.searches.forEach(hit => {
+					const sick = $("#list-tab").append(`
+							<a class="list-group-item list-group-item-action" data-toggle="list" href="#" role="tab" id="watcher-${hit}">
+								${hit}
+								${data.new_hits[hit] && data.new_hits[hit].length ? `<span class="badge badge-primary badge-pill float-right mt-1" onclick="selectSearch('${(data.new_hits[hit].length ? data.new_hits[hit].join(" OR ") : hit)}')">${data.new_hits[hit] ? data.new_hits[hit].length : ""}</span>` : ""}
+								<button onclick="removeHit('${hit}')" class="float-right showhover"><span>REMOVE</span></button>
+								<button onclick="clearHit('${hit}')" class="float-right showhover"><span>CLEAR</span></button>
+							</a>
+						`);
 
-				$(`#watcher-${hit}`).click(function (a) {
-					if (a.toElement.tagName == "SPAN") return
-					// selectSearch((data.new_hits[hit].length ? data.new_hits[hit].join(`${" OR "}`) : hit));
-					selectSearch(hit);
-				})
+					$(`#watcher-${hit}`).click(function (a) {
+						if (a.toElement.tagName == "SPAN") return
+						// selectSearch((data.new_hits[hit].length ? data.new_hits[hit].join(`${" OR "}`) : hit));
+						selectSearch(hit);
+					})
+				});
+				$('#search').on('keypress', (e) => { if (e.which == 13) $('#add').click() });
 			});
-			$('#search').on('keypress', (e) => { if (e.which == 13) $('#add').click() });
 		}
 
 		const add = async _ => {
