@@ -1,6 +1,7 @@
 import request = require('request');
 import express = require('express');
-import http = require('https');
+import https = require('https');
+import http = require('http');
 import fs = require('fs');
 import { Application } from 'express';
 import bodyParser = require('body-parser');
@@ -45,8 +46,12 @@ class Server {
         this.app.use(this.allowCrossDomain);
         this.app.use(express.static(__dirname, { dotfiles: 'allow' }));
 
-        http.createServer(credentials, this.httpApp).listen(Config.httpPort, () => {
-            this.logStartupMessage('HTTP Server started at port: ' + Config.httpPort);
+        https.createServer(credentials, this.httpApp).listen(Config.httpPort, () => {
+            this.logStartupMessage('HTTPS Server started at port: ' + Config.httpPort);
+        });
+
+        http.createServer(this.httpApp).listen(80, () => {
+            this.logStartupMessage('HTTP Server started at port: ' + 80);
         });
 
         this.app.post('/subscribe', async (req, res) => {
