@@ -14,10 +14,11 @@
 	<script language="JavaScript">
 		const elvisApi = new ElvisAPI('${serverUrl}');
 		let pluginServerUrl = "${serverUrl}/plugins/elvis_plugin_search_notify_api";
-		let elvisContext, csrfToken;
+		let elvisContext, csrfToken, mailActive;
 
 		const init = async (data) => {
 			elvisApi.csrf(async csrfdata => {
+				mailActive = await fetch(`${pluginServerUrl}/mail`, { headers: { 'X-CSRF-TOKEN': csrfToken } }).then(response => response.json());
 				csrfToken = csrfdata.csrfToken
 				elvisContext = ElvisPlugin.resolveElvisContext();
 				if (!data) { $(".loading").show(), data = await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`, { headers: { 'X-CSRF-TOKEN': csrfToken } }).then(response => response.json()); }
@@ -54,22 +55,29 @@
 			// if (!state) return alert("Unexpected error while registering the serviceworker in your browser.")
 			else {
 				const curr = await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`, { headers: { 'X-CSRF-TOKEN': csrfToken } }).then(response => response.json())
-				if (typeof curr == "object") init(await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`, {
-					method: 'PUT',
-					body: JSON.stringify({ search: search }),
-					headers: {
-						'content-type': 'application/json',
-						'X-CSRF-TOKEN': csrfToken
-					}
-				}).then(res => res.json()))
-				else init(await fetch(`${pluginServerUrl}/subscribe`, {
-					method: 'POST',
-					body: JSON.stringify({ search: search, userprofile: elvisContext.app.userProfile }),
-					headers: {
-						'content-type': 'application/json',
-						'X-CSRF-TOKEN': csrfToken
-					}
-				}).then(res => res.json()));
+				if (typeof curr == "object") {
+					init(await fetch(`${pluginServerUrl}/list/${elvisContext.app.userProfile.username}`, {
+						method: 'PUT',
+						body: JSON.stringify({ search: search }),
+						headers: {
+							'content-type': 'application/json',
+							'X-CSRF-TOKEN': csrfToken
+						}
+					}).then(res => res.json()))
+				}
+				else {
+					let options = { search: search, userprofile: elvisContext.app.userProfile };
+					let mail = mailActive ? prompt("Which email would you like to be notified on?") : null;
+					if (mailActive) options['mail'] = mail;
+					init(await fetch(`${pluginServerUrl}/subscribe`, {
+						method: 'POST',
+						body: JSON.stringify(options),
+						headers: {
+							'content-type': 'application/json',
+							'X-CSRF-TOKEN': csrfToken
+						}
+					}).then(res => res.json()));
+				}
 			}
 		}
 

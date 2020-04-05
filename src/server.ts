@@ -1,3 +1,4 @@
+import nodemailer = require('nodemailer');
 import request = require('request');
 import express = require('express');
 import http = require('http');
@@ -7,9 +8,14 @@ import bodyParser = require('body-parser');
 import { Config } from './config';
 import { ElvisApi } from './elvis-api/api';
 import { ApiManager } from './elvis-api/api-manager';
-// import webpush = require('web-push');
 
-// webpush.setVapidDetails('mailto:sjoerdabolten@gamil.com', Config.publicVapidKey, Config.privateVapidKey);
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'sjoerdabolten@gmail.com',
+        pass: 'itqtzanvjnfueucd'
+    }
+});
 
 class Server {
     private static instance: Server;
@@ -36,10 +42,18 @@ class Server {
             this.logStartupMessage('HTTP Server started at port: ' + Config.httpPort);
         });
 
+        this.app.post('/webhook', async (req, res) => {
+            console.log("Webhook triggered")
+            req = req;
+            this.checkQueries("all-usernames", true);
+            res.end(200);
+        })
+
         this.app.post('/subscribe', async (req, res) => {
             // if (!(req.body.subscription && req.body.search && req.body.userprofile)) return res.status(422).json({});
-            if (!(req.body.search && req.body.userprofile)) return res.status(422).json({});
-
+            console.log('mailin', 'mail' in req.body)
+            console.log('ative', Config.notifyMail)
+            if (!(req.body.search && req.body.userprofile && ('mail' in req.body == Config.notifyMail))) return res.status(422).json({});
 
             delete req.body.userprofile.authorities;
 
@@ -51,6 +65,7 @@ class Server {
                 new_hits: {
                     [req.body.search]: []
                 },
+                mail: req.body.mail,
                 userprofile: req.body.userprofile
             }
 
@@ -121,6 +136,10 @@ class Server {
             this.checkQueries(req.params.username, false);
         })
 
+        this.app.get('/mail', async (req, res) => {
+            req = req;
+            res.status(200).json(Config.notifyMail);
+        })
 
         this.checkQueries("all-usernames", true);
     }
@@ -128,6 +147,7 @@ class Server {
     private logStartupMessage(serverMsg: string): void {
         console.info('Running NodeJS ' + process.version + ' on ' + process.platform + ' (' + process.arch + ')');
         console.info(serverMsg);
+        console.info(`Notifications: \n\tSlack:\t${Config.notifySlack}\n\tMail:\t${Config.notifyMail}`);
     }
 
     private allowCrossDomain = (req, res, next) => {
@@ -164,12 +184,45 @@ class Server {
                         // if (push) webpush.sendNotification(subscription.subscription, JSON.stringify({ hits: hits, search: search })).catch(error => {
                         //     console.error(error.stack);
                         // });
-                        if (push) this.sendSlack({ hits: hits, search: search })
+                        if (push && Config.notifySlack) this.sendSlack({ hits: hits, search: search })
+                        if (push && Config.notifyMail) this.sendMail({ hits: hits, search: search }, subscription)
                     }
                 }
             }
         };
         fs.writeFileSync("subscriptions.json", JSON.stringify(subscriptions));
+    }
+
+    private sendMail(payload, subscription) {
+        if (payload.hits.length == 0) return
+        let id_list = payload.hits.map(hit => hit.id).join(" OR ");
+
+        const generateUrl = q => {
+            let url = payload.hits[0].originalUrl
+            url = url.slice(0, url.indexOf("/file/")) + `/app/#/search/${encodeURI(q)}/relevance,created-desc/?enableAssetsOfCollections=true&showAssetsOfSubfolders=true`
+            return url;
+        }
+
+        let html = `
+        <div>There are <strong>${payload.hits.length}</strong> new results for <em>${payload.search}</em></div>
+                ${
+            payload.hits.map(hit => {
+                return `<div><em><em><em>-&nbsp;</em></em></em><strong>${hit.name}</strong></div><div><div>&nbsp; Modified: ${hit.metadata.assetModified.formatted}<br />&nbsp; Tags: ${hit.metadata.tags ? hit.metadata.tags.toString() : 'none'}</div></div>`
+            }).join("<br>") + "<br>"
+            }
+        <div><a href="${generateUrl(id_list)}">Show new results for ${payload.search}</a></div>
+        <div><a href="${generateUrl(payload.search)}"> Show all results for ${payload.search} </a></div>
+        `;
+
+        const mailOptions = {
+            from: 'elvis-demo@netlob.dev',
+            to: subscription.mail,
+            subject: `${payload.hits.length} new ${payload.hits.length == 1 ? 'hit' : 'hits'} on ${payload.search}!`,
+            html: html
+        };
+
+        console.log("Sending mail...");
+        transporter.sendMail(mailOptions, err => { if (err) console.log(err) });
     }
 
     private sendSlack(payload) {
@@ -182,18 +235,18 @@ class Server {
             return url;
         }
 
-        let postData = `
+        let data = `
                 {
                     "blocks": [
+                        {
+                            "type": "divider"
+                        },
                         {
                             "type": "section",
                             "text": {
                                 "type": "mrkdwn",
-                                "text": "There are *${payload.hits.length}* new results for _${payload.search}_"
+                                "text": "${payload.hits.length} new ${payload.hits.length == 1 ? 'hit' : 'hits'} on ${payload.search}!"
                             }
-                        },
-                        {
-                            "type": "divider"
                         },
                         ${
             payload.hits.map(hit => {
@@ -202,7 +255,7 @@ class Server {
                                                     "type": "section",
                                                     "text": {
                                                         "type": "mrkdwn",
-                                                        "text": "*${hit.name}*\nModified: ${hit.metadata.assetModified.formatted}\nTags: ${hit.metadata.tags.toString()}"
+                                                        "text": "*${hit.name}*\nModified: ${hit.metadata.assetModified.formatted}\nTags: ${hit.metadata.tags ? hit.metadata.tags.toString() : 'none'}"
                                                     },
                                                     "accessory": {
                                                         "type": "button",
@@ -213,8 +266,8 @@ class Server {
                                                         },
                                                         "url": "${generateUrl(hit.id)}"
                                                     }
-                                                }`
-            }).join(",") + ","
+                                                },`
+            })
             }
                         {
                             "type": "section",
@@ -240,10 +293,11 @@ class Server {
             'headers': {
                 'Content-type': 'application/json'
             },
-            body: postData
+            body: data
         };
 
-        request(options, error => {
+        console.log("Sending slack...");
+        request(options, function (error, response) {
             if (error) throw new Error(error);
         });
     }
@@ -256,4 +310,4 @@ class Server {
 
 let server: Server = Server.getInstance();
 server.start();
-server.startInterval(10); // in seconds
+server.startInterval(60); // in seconds

@@ -22,6 +22,8 @@ export class Config {
      */
     static slackWebhook: string = process.env.SLACK_WEBHOOK || 'https://hooks.slack.com/services/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';
 
+    static notifySlack: boolean = true;
+    static notifyMail: boolean = true;
 
     /**
      * NOT REQUIRED ANYMORE
