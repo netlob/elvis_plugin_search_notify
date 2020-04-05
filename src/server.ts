@@ -1,3 +1,4 @@
+import request = require('request');
 import express = require('express');
 import http = require('http');
 import fs = require('fs');
@@ -6,9 +7,9 @@ import bodyParser = require('body-parser');
 import { Config } from './config';
 import { ElvisApi } from './elvis-api/api';
 import { ApiManager } from './elvis-api/api-manager';
-import webpush = require('web-push');
+// import webpush = require('web-push');
 
-webpush.setVapidDetails('mailto:sjoerdabolten@gamil.com', Config.publicVapidKey, Config.privateVapidKey);
+// webpush.setVapidDetails('mailto:sjoerdabolten@gamil.com', Config.publicVapidKey, Config.privateVapidKey);
 
 class Server {
     private static instance: Server;
@@ -36,14 +37,15 @@ class Server {
         });
 
         this.app.post('/subscribe', async (req, res) => {
-            if (!(req.body.subscription && req.body.search && req.body.userprofile)) return res.status(422).json({});
-            else res.status(201).json({});
+            // if (!(req.body.subscription && req.body.search && req.body.userprofile)) return res.status(422).json({});
+            if (!(req.body.search && req.body.userprofile)) return res.status(422).json({});
+
 
             delete req.body.userprofile.authorities;
 
             const current = JSON.parse(fs.readFileSync("subscriptions.json", "utf8"));
             let sub = {
-                subscription: req.body.subscription,
+                // subscription: req.body.subscription,
                 searches: [req.body.search],
                 old_hits: [],
                 new_hits: {
@@ -55,6 +57,7 @@ class Server {
             current.push(sub);
             fs.writeFileSync("subscriptions.json", JSON.stringify(current));
             this.checkQueries(req.body.userprofile.username, false);
+            res.status(201).json(sub);
         });
 
         this.app.get('/list/:username', async (req, res) => {
@@ -150,21 +153,98 @@ class Server {
                     let hits = [];
                     res.hits.forEach(hit => {
                         hit.name = hit.metadata.name;
-                        delete hit.metadata;
+                        // delete hit.metadata;
                         if (subscription.old_hits.includes(hit.id)) return;
                         else hits.push(hit);
                     });
                     subscriptions[index].old_hits = subscriptions[index].old_hits.concat(hits.map(hit => hit.id));
                     if (hits.length) {
                         subscriptions[index].new_hits[search] = subscriptions[index].new_hits[search].concat(hits.map(hit => hit.id));
-                        if (push) webpush.sendNotification(subscription.subscription, JSON.stringify({ hits: hits, search: search })).catch(error => {
-                            console.error(error.stack);
-                        });
+                        // if (push) webpush.sendNotification(subscription.subscription, JSON.stringify({ hits: hits, search: search })).catch(error => {
+                        //     console.error(error.stack);
+                        // });
+                        if (push) this.sendSlack({ hits: hits, search: search })
                     }
                 }
             }
         };
         fs.writeFileSync("subscriptions.json", JSON.stringify(subscriptions));
+    }
+
+    private sendSlack(payload) {
+        if (payload.hits.length == 0) return
+        let id_list = payload.hits.map(hit => hit.id).join(" OR ");
+
+        const generateUrl = q => {
+            let url = payload.hits[0].originalUrl
+            url = url.slice(0, url.indexOf("/file/")) + `/app/#/search/${encodeURI(q)}/relevance,created-desc/?enableAssetsOfCollections=true&showAssetsOfSubfolders=true`
+            return url;
+        }
+
+        let postData = `
+                {
+                    "blocks": [
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": "There are *${payload.hits.length}* new results for _${payload.search}_"
+                            }
+                        },
+                        {
+                            "type": "divider"
+                        },
+                        ${
+            payload.hits.map(hit => {
+                return `
+                                                {
+                                                    "type": "section",
+                                                    "text": {
+                                                        "type": "mrkdwn",
+                                                        "text": "*${hit.name}*\nModified: ${hit.metadata.assetModified.formatted}\nTags: ${hit.metadata.tags.toString()}"
+                                                    },
+                                                    "accessory": {
+                                                        "type": "button",
+                                                        "text": {
+                                                            "type": "plain_text",
+                                                            "emoji": true,
+                                                            "text": "View"
+                                                        },
+                                                        "url": "${generateUrl(hit.id)}"
+                                                    }
+                                                }`
+            }).join(",") + ","
+            }
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": "*<${generateUrl(id_list)}|Show new results for ${payload.search}>*"
+                            }
+                        },
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": "*<${generateUrl('flowers')}|Show all results for ${payload.search}>*"
+                            }
+                        }
+                    ]
+                }
+          `;
+
+        const options = {
+            'method': 'POST',
+            'url': Config.slackWebhook,
+            'headers': {
+                'Content-type': 'application/json'
+            },
+            body: postData
+        };
+
+        request(options, error => {
+            if (error) throw new Error(error);
+        });
     }
 
     public startInterval(interval) {

@@ -18,6 +18,13 @@ export class Config {
 
 
     /**
+     * Slack webhook url.
+     */
+    static slackWebhook: string = process.env.SLACK_WEBHOOK || 'https://hooks.slack.com/services/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';
+
+
+    /**
+     * NOT REQUIRED ANYMORE
      * Web push keys
      * If you dont know what these are, leave them like this.
      * If you do know what these are and how to generate them, make sure to update the public key accordingly in the index.html file!
