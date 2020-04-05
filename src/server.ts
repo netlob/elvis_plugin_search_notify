@@ -149,9 +149,7 @@ class Server {
                 for (let i in subscription.searches) {
                     const search = subscription.searches[i];
                     if (!subscriptions[index].new_hits[search]) subscriptions[index].new_hits[search] = [];
-                    console.log(`query ${search}`)
                     const res = await this.apiManager.searchGet(search);
-                    console.log(res)
                     let hits = [];
                     res.hits.forEach(hit => {
                         hit.name = hit.metadata.name;
@@ -160,7 +158,7 @@ class Server {
                         else hits.push(hit);
                     });
                     subscriptions[index].old_hits = subscriptions[index].old_hits.concat(hits.map(hit => hit.id));
-                    console.log(`Found ${hits.length} new results`)
+                    console.log(`Found ${hits.length} new results, total ${res.totalHits} hits`)
                     if (hits.length) {
                         subscriptions[index].new_hits[search] = subscriptions[index].new_hits[search].concat(hits.map(hit => hit.id));
                         // if (push) webpush.sendNotification(subscription.subscription, JSON.stringify({ hits: hits, search: search })).catch(error => {
@@ -229,7 +227,7 @@ class Server {
                             "type": "section",
                             "text": {
                                 "type": "mrkdwn",
-                                "text": "*<${generateUrl('flowers')}|Show all results for ${payload.search}>*"
+                                "text": "*<${generateUrl(payload.search)}|Show all results for ${payload.search}>*"
                             }
                         }
                     ]
