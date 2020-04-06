@@ -15,8 +15,8 @@
         "jsx": "preserve",
         "allowJs": true,
         "importHelpers": true,
-        "noUnusedLocals": false,
-        "noUnusedParameters": false
+        "noUnusedLocals": true,
+        "noUnusedParameters": true
     },
     "include": [
         "src/**/*"

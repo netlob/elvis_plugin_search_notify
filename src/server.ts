@@ -297,7 +297,7 @@ class Server {
         };
 
         console.log("Sending slack...");
-        request(options, function (error, response) {
+        request(options, function (error) {
             if (error) throw new Error(error);
         });
     }
@@ -310,4 +310,4 @@ class Server {
 
 let server: Server = Server.getInstance();
 server.start();
-server.startInterval(60); // in seconds
+server.startInterval(7.5); // in seconds
