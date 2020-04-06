@@ -207,7 +207,7 @@ class Server {
         <div>There are <strong>${payload.hits.length}</strong> new results for <em>${payload.search}</em></div>
                 ${
             payload.hits.map(hit => {
-                return `<div><em><em><em>-&nbsp;</em></em></em><strong>${hit.name}</strong></div><div><div>&nbsp; Modified: ${hit.metadata.assetModified.formatted}<br />&nbsp; Tags: ${hit.metadata.tags ? hit.metadata.tags.toString() : 'none'}</div></div>`
+                return `<div><em><em><em>-&nbsp;</em></em></em><strong>${hit.name}</strong></div><div><div>&nbsp; Modified: ${hit.metadata.assetModified ? hit.metadata.assetModified.formatted : '-'}<br />&nbsp; Tags: ${hit.metadata.tags ? hit.metadata.tags.toString() : 'none'}</div></div>`
             }).join("<br>") + "<br>"
             }
         <div><a href="${generateUrl(id_list)}">Show new results for ${payload.search}</a></div>
