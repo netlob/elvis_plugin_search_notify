@@ -1,11 +1,4 @@
 export class Config {
-    /* 
-    * When using this on a not localhost machine, OR when you changed the  ,make sure to update the "pluginServerUrl" in index.html at line 16.
-    * 
-    * /
-
-
-
     /**
      * Elvis server url.
      */
@@ -15,7 +8,6 @@ export class Config {
      * HTTP Port where the app runs.
      */
     static httpPort: string = process.env.IR_HTTP_PORT || '7060';
-
 
     /**
      * Slack webhook url.
@@ -31,8 +23,8 @@ export class Config {
      * If you dont know what these are, leave them like this.
      * If you do know what these are and how to generate them, make sure to update the public key accordingly in the index.html file!
      */
-    static publicVapidKey = process.env.PUBLIC_VAPID_KEY || 'BErbSfblbOSTn12duCuc5KT1kD-J9I1fENrERlhIIYfsUNwfTL4Mgbd2BH8FqYUhBJCl0DEbds_SFjQsbrB2Qs8';
-    static privateVapidKey = process.env.PRIVATE_VAPID_KEY || 'vwKrOMmmzcy2J35DJ3AxF5VK7p7HOwIvqE8FpoOWqVA';
+    // static publicVapidKey = process.env.PUBLIC_VAPID_KEY || 'BErbSfblbOSTn12duCuc5KT1kD-J9I1fENrERlhIIYfsUNwfTL4Mgbd2BH8FqYUhBJCl0DEbds_SFjQsbrB2Qs8';
+    // static privateVapidKey = process.env.PRIVATE_VAPID_KEY || 'vwKrOMmmzcy2J35DJ3AxF5VK7p7HOwIvqE8FpoOWqVA';
 
     /**
      * CORS header. Default value is elvisUrl. You can change this value to, for example '*' to open up access to other domains than the Elvis URL. 

@@ -255,7 +255,7 @@ class Server {
                                                     "type": "section",
                                                     "text": {
                                                         "type": "mrkdwn",
-                                                        "text": "*${hit.name}*\nModified: ${hit.metadata.assetModified.formatted}\nTags: ${hit.metadata.tags ? hit.metadata.tags.toString() : 'none'}"
+                                                        "text": "*${hit.name}*\nModified: ${hit.metadata.assetModified ? hit.metadata.assetModified.formatted : '-'}\nTags: ${hit.metadata.tags ? hit.metadata.tags.toString() : 'none'}"
                                                     },
                                                     "accessory": {
                                                         "type": "button",
